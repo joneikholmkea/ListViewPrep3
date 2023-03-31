@@ -53,6 +53,7 @@ public class MyAdapter extends BaseAdapter {
         imageView.setImageResource(items.get(position).getImage());
         imageView.setTag(items.get(position).getImage());
         textView.setText(items.get(position).getText());
+
         return linearLayout;
     }
 }

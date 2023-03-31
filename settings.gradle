@@ -1,3 +1,6 @@
+import org.gradle.api.initialization.resolve.RepositoriesMode
+// fix problem with new structure: https://stackoverflow.com/questions/69163511/build-was-configured-to-prefer-settings-repositories-over-project-repositories-b
+
 pluginManagement {
     repositories {
         google()
@@ -6,10 +9,11 @@ pluginManagement {
     }
 }
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)  // change to this
     repositories {
         google()
         mavenCentral()
+        maven { url 'https://jitpack.io' }  // and add this line
     }
 }
 rootProject.name = "ListViewPrep3"
