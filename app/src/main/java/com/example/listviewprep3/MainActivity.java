@@ -27,7 +27,9 @@ import com.example.listviewprep3.adapter.MyAdapter;
 import com.example.listviewprep3.model.Item;
 import com.example.listviewprep3.repo.FirebaseService;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
         createLaunchers();
+        fs.downloadImageFromFirebase("space.jpg");
     }
 
     private void createLaunchers() {
@@ -69,20 +72,22 @@ public class MainActivity extends AppCompatActivity {
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == Activity.RESULT_OK) {
-                        Intent data = result.getData();
-                        imageView.setImageURI(data.getData());
+                        Intent intentData = result.getData();
+                        imageView.setImageURI(intentData.getData());
                         Bitmap bitmap = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
-                        fs.saveImage(getBytes(bitmap));
+//                        fs.saveImage(getBytes(bitmap)); // use this for smaller files
+                        fs.saveImageWithStream(new ByteArrayInputStream(getBytes(bitmap)));
                     }
                 });
         launchCameraForResult = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == Activity.RESULT_OK) {
-                        Intent data = result.getData();
-                        Bitmap bitmap = (Bitmap) data.getExtras().get("data");
-                        bitmap = Bitmap.createScaledBitmap(bitmap, bitmap.getWidth(),
-                                    bitmap.getHeight(), true);
+                        Intent intentData = result.getData();
+                        Bitmap bitmap = (Bitmap) intentData.getExtras().get("data");
+                        saveImageToPhotos(bitmap);
+//                        bitmap = Bitmap.createScaledBitmap(bitmap, bitmap.getWidth(),
+//                                    bitmap.getHeight(), true);
                         imageView.setImageBitmap(bitmap);
                         fs.saveImage(getBytes(bitmap));
                     }
@@ -104,6 +109,11 @@ public class MainActivity extends AppCompatActivity {
         }catch (Exception e){
             System.out.println("error " + e.getMessage());
         }
+    }
+
+    public void saveImageToPhotos(Bitmap bitmap){
+        String result = MediaStore.Images.Media.insertImage(getContentResolver(), bitmap, "myImage", "simple image");
+        System.out.println("result of saving image to Photos: " + result);
     }
 
     @NonNull

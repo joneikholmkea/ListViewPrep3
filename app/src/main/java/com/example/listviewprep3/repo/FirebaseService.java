@@ -1,11 +1,20 @@
 package com.example.listviewprep3.repo;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.provider.MediaStore;
+
+import androidx.annotation.NonNull;
+
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,6 +41,30 @@ public class FirebaseService {
 
         uploadTask.addOnFailureListener(exception -> {
             System.out.println("failed to upload to storage " + is.toString());
+        });
+    }
+
+    public void saveImageWithStream(InputStream is){
+        StorageReference spaceRef = storageRef.child("space.jpg");
+        UploadTask uploadTask = spaceRef.putStream(is);
+        uploadTask.addOnSuccessListener(taskSnapshot -> {
+            System.out.println("Success in upload to storage with Stream " + is.toString());
+            // taskSnapshot.getMetadata() contains file metadata such as size, content-type, etc.
+            // ...
+        });
+
+        uploadTask.addOnFailureListener(exception -> {
+            System.out.println("failed to upload to storage with Stream " + is.toString());
+        });
+    }
+
+    public void downloadImageFromFirebase(String imagePath) {
+        StorageReference storageReference = storageRef.child(imagePath);
+        storageReference.getBytes(1024 * 1024).addOnSuccessListener(bytes -> {
+            Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+            System.out.println("received image: " + bitmap.getWidth() + " " + bitmap.getHeight());
+        }).addOnFailureListener(e -> {
+            System.out.println("error fetching image from firebase: " + e.getMessage());
         });
     }
 
