@@ -5,15 +5,13 @@ import static android.content.Intent.ACTION_PICK;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-
-import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -29,7 +27,6 @@ import com.example.listviewprep3.repo.FirebaseService;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
                 result -> {
                     if (result.getResultCode() == Activity.RESULT_OK) {
                         Intent intentData = result.getData();
-                        imageView.setImageURI(intentData.getData());
+                        imageView.setImageURI(intentData.getData()); // when you set an existing file into imageView
                         Bitmap bitmap = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
 //                        fs.saveImage(getBytes(bitmap)); // use this for smaller files
                         fs.saveImageWithStream(new ByteArrayInputStream(getBytes(bitmap)));
@@ -85,10 +82,10 @@ public class MainActivity extends AppCompatActivity {
                     if (result.getResultCode() == Activity.RESULT_OK) {
                         Intent intentData = result.getData();
                         Bitmap bitmap = (Bitmap) intentData.getExtras().get("data");
+                        //bitmap = drawTextToBitmap(bitmap,"you look good");
                         saveImageToPhotos(bitmap);
-//                        bitmap = Bitmap.createScaledBitmap(bitmap, bitmap.getWidth(),
-//                                    bitmap.getHeight(), true);
-                        imageView.setImageBitmap(bitmap);
+//                      bitmap = Bitmap.createScaledBitmap(bitmap, 300, 200, true); // to resize the image
+                        imageView.setImageBitmap(bitmap); // when you set an image from memory into imageView
                         fs.saveImage(getBytes(bitmap));
                     }
                 });
@@ -123,20 +120,23 @@ public class MainActivity extends AppCompatActivity {
         return baos.toByteArray();
     }
 
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-//        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-//        System.out.println("result from permission quest: ");
-//        if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-//            System.out.println("YES, we may save !!");
-//        }
-//    }
-
-//    private void handlePermissionUpdate() {
-//        if(ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
-//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1); //ask for p.
-//        }
-//    }
+    public Bitmap drawTextToBitmap(Bitmap image, String gText) {
+        Bitmap.Config bitmapConfig = image.getConfig();
+        // set default bitmap config if none
+        if(bitmapConfig == null) {
+            bitmapConfig = Bitmap.Config.ARGB_8888;
+        }
+        // resource bitmaps are imutable,
+        // so we need to convert it to mutable one
+        image = image.copy(bitmapConfig, true);
+        Canvas canvas = new Canvas(image);
+        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);// new antialised Paint
+        paint.setColor(Color.rgb(161, 161, 161));
+        paint.setTextSize((int) (15)); // text size in pixels
+        paint.setShadowLayer(1f, 0f, 1f, Color.WHITE); // text shadow
+        canvas.drawText(gText, 10, 100, paint);
+        return image;
+    }
 
     private void addItems() {
         names.add(new Item("Road Bike", R.drawable.road));
